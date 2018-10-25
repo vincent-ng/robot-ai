@@ -23,8 +23,12 @@ class App extends React.Component {
 		this.onSend = this.onSend.bind(this)
 	}
 
+	componentDidMount() {
+		this.speakInput.focus()
+	}
+
 	componentDidUpdate() {
-		this.messagesEnd.scrollIntoView({ behavior: 'smooth' })
+		this.messagesEnd.scrollIntoView({ behavior: 'instant', block: 'end' })
 	}
 
 	async onSpeakRecognition() {
@@ -54,7 +58,7 @@ class App extends React.Component {
 		this.state.chatList.push({ text: answer, isMe: false })
 		this.setState({ loadingSend: false })
 		speak(answer)
-		setTimeout(() => this.speakInput.focus(), 250)
+		this.speakInput.focus()
 	}
 
 	async onKeyDown(key) {
