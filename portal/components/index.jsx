@@ -20,7 +20,6 @@ class App extends React.Component {
 		}
 		this.onSpeakRecognition = this.onSpeakRecognition.bind(this)
 		this.onStopSpeakRecognition = this.onStopSpeakRecognition.bind(this)
-		this.onSend = this.onSend.bind(this)
 	}
 
 	componentDidMount() {
@@ -33,16 +32,17 @@ class App extends React.Component {
 
 	async onSpeakRecognition() {
 		this.setState({ loadingSpeakRecognition: true })
-		let input = '对不起，我没听清楚你说什么'
+		let defaultAnswer
 		try {
 			const sr = speakRecognition()
 			this.setState({ sr })
-			input = await sr.listern()
+			const input = await sr.listern()
+			this.setState({ input, sr })
 		} catch (e) {
-			input = e.message
+			defaultAnswer = e.message
 		}
-		this.setState({ input, sr: null, loadingSpeakRecognition: false })
-		await this.onSend(input)
+		this.setState({ loadingSpeakRecognition: false })
+		await this.onSend(defaultAnswer)
 	}
 
 	async onStopSpeakRecognition() {
@@ -50,7 +50,7 @@ class App extends React.Component {
 		this.setState({ sr: null, loadingSpeakRecognition: false })
 	}
 
-	async onSend(defaultAnswer = '') {
+	async onSend(defaultAnswer = '对不起，我没听清楚你说什么') {
 		const text = this.state.input
 		if (text) {
 			this.state.chatList.push({ text, isMe: true })
@@ -136,14 +136,14 @@ class App extends React.Component {
 					<Col span={20}>
 						<Input
 							onChange={e => this.setState({ input: e.target.value })}
-							value={this.state.input} onPressEnter={this.onSend}
+							value={this.state.input} onPressEnter={() => this.onSend()}
 							onKeyDown={e => this.onKeyDown(e.key)}
 							disabled={this.state.loadingSpeakRecognition || this.state.loadingSend}
 							ref={(el) => { this.speakInput = el }}
 						/>
 					</Col>
 					<Col span={this.state.input ? 4 : 0}>
-						<Button style={{ width: '100%' }} onClick={this.onSend} loading={this.state.loadingSend}>Send</Button>
+						<Button style={{ width: '100%' }} onClick={() => this.onSend()} loading={this.state.loadingSend}>Send</Button>
 					</Col>
 					<Col span={!this.state.input && !this.state.loadingSpeakRecognition ? 4 : 0}>
 						<Button style={{ width: '100%' }} onClick={this.onSpeakRecognition}><Icon type="sound" theme="outlined" /></Button>
