@@ -32,7 +32,7 @@
     "lint"
   ],
   "scripts": {
-    "build": "powershell -c \"rm ../docs/*; atool-build; mv dist/* ../docs; cp index.html ../docs/\"",
+    "build": "powershell -c \"rm ../docs/*; atool-build; mv dist/* ../docs; cp index.html ../docs/; cp ../readme.md ../docs/\"",
     "lint": "eslint --ext .js,.jsx src/",
     "start": "dora --port 8080 --plugins webpack",
     "test": "atool-test-mocha ./**/__tests__/*-test.js"
