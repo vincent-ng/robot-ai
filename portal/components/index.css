@@ -1,0 +1,32 @@
+body {
+	background-color: #fefefe;
+	height: auto;
+}
+
+.chat-box {
+	max-height: 480px;
+	overflow-y: scroll;
+}
+
+.chat-box-item {
+	background-color: white;
+	color: #505050;
+	padding: 6px 8px;
+	text-align: left;
+	text-decoration: none;
+	border-radius: 4px;
+	-webkit-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	min-height: 32px;
+	word-wrap: break-word;
+	vertical-align: middle;
+	margin: 3px 10px;
+	max-width: 320px;
+	display: inline-block;
+}
+
+.chat-box-item.is-me {
+	background-color: lightgreen;
+	color: #505050;
+	transform:scaleX(-1);
+}

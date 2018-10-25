@@ -1,0 +1,23 @@
+{
+  "name": "smart-admin-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@brickyard/logger": "0.0.3",
+    "@koa/cors": "^2.2.2",
+    "jsonwebtoken": "^8.3.0",
+    "koa": "^2.5.3",
+    "koa-body": "^4.0.4",
+    "koa-compress": "^3.0.0",
+    "koa-qs": "^2.0.0",
+    "koa-router": "^7.4.0",
+    "node-fetch": "^2.2.0",
+    "ramda": "^0.25.0"
+  }
+}
