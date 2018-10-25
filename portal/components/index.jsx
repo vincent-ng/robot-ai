@@ -33,19 +33,24 @@ class App extends React.Component {
 
 	async onSpeakRecognition() {
 		this.setState({ loadingSpeakRecognition: true })
-		const sr = speakRecognition()
-		this.setState({ sr })
-		const input = await sr.listern()
-		this.setState({ input, loadingSpeakRecognition: false })
+		let input = '对不起，我没听清楚你说什么'
+		try {
+			const sr = speakRecognition()
+			this.setState({ sr })
+			input = await sr.listern()
+		} catch (e) {
+			input = e.message
+		}
+		this.setState({ input, sr: null, loadingSpeakRecognition: false })
 		await this.onSend(input)
 	}
 
 	async onStopSpeakRecognition() {
 		this.state.sr.stop()
-		this.setState({ sn: null, loadingSpeakRecognition: false })
+		this.setState({ sr: null, loadingSpeakRecognition: false })
 	}
 
-	async onSend() {
+	async onSend(defaultAnswer = '') {
 		const text = this.state.input
 		if (text) {
 			this.state.chatList.push({ text, isMe: true })
@@ -54,7 +59,7 @@ class App extends React.Component {
 		this.setState({ input: '', inputHistoryIndex: null })
 
 		this.setState({ loadingSend: true })
-		const answer = await talkToAI(text, { emptySpeak: '对不起，我没听清楚你说什么', emptyAnswer: '智商掉线了' })
+		const answer = await talkToAI(text, { emptySpeak: defaultAnswer, emptyAnswer: '智商掉线了' })
 		this.state.chatList.push({ text: answer, isMe: false })
 		this.setState({ loadingSend: false })
 		speak(answer)
