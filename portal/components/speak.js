@@ -28,7 +28,8 @@ function speakRecognition(timeout = 3) {
 
 function speak(text, voice) {
 	const utter = new SpeechSynthesisUtterance(text)
-	utter.voice = voice || R.find(R.propEq('lang', 'zh-CN'))(speechSynthesis.getVoices())
+	const voices = speechSynthesis.getVoices()
+	utter.voice = R.find(R.propEq('name', voice))(voices) || R.find(R.propEq('default', true))(voices)
 	utter.pitch = 1.1
 	speechSynthesis.speak(utter)
 }

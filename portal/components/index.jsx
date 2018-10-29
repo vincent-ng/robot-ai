@@ -1,7 +1,8 @@
 // import R from 'ramda'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import { Row, Col, Button, Input, Icon, List, Avatar } from 'antd'
+import { Row, Col, Button, Input, Avatar, Divider } from 'antd'
+import { StatusPanel } from './status-panel'
 import { talkToAI } from './ai'
 import { speakRecognition, speak } from './speak'
 import './index.css'
@@ -12,10 +13,12 @@ class App extends React.Component {
 		this.state = {
 			loadingSpeakRecognition: false,
 			loadingSend: false,
+			inputMode: 'sound',
 			inputHistory: [],
 			inputHistoryIndex: null,
 			input: '',
 			chatList: [{ text: '在输入框输入文字，或点击录音按钮可与我对话。', isMe: false }],
+			voice: null,
 			sr: null,
 		}
 		this.onSpeakRecognition = this.onSpeakRecognition.bind(this)
@@ -62,7 +65,7 @@ class App extends React.Component {
 		const answer = await talkToAI(text, { emptySpeak: defaultAnswer, emptyAnswer: '智商掉线了' })
 		this.state.chatList.push({ text: answer, isMe: false })
 		this.setState({ loadingSend: false })
-		speak(answer)
+		speak(answer, this.state.voice)
 		this.speakInput.focus()
 	}
 
@@ -89,51 +92,38 @@ class App extends React.Component {
 	render() {
 		const avatarCol = {
 			style: { textAlign: 'right' },
+			xs: { span: 3 },
 			sm: { span: 2 },
 			md: { span: 1 },
 		}
 		const chatCol = {
+			xs: { span: 21 },
 			sm: { span: 22 },
 			md: { span: 23 },
 		}
 
 		return (
-			<div style={{ margin: 50 }}>
-				<h1>Robot AI</h1>
-				<hr />
+			<div>
+				<StatusPanel title={<b style={{ fontSize: 16 }}>Robot AI</b>} onChangeVoice={voice => this.setState({ voice })} />
+				<Divider />
 				<div className="chat-box">
-					<List
-						dataSource={this.state.chatList}
-						split={false}
-						renderItem={item => (
-							<List.Item>
-								{item.isMe &&
-									<Row style={{ width: '100%', transform: 'scaleX(-1)' }}>
-										<Col {...avatarCol}>
-											<Avatar icon="user" size="large" />
-										</Col>
-										<Col {...chatCol}>
-											<div className="chat-box-item is-me">{item.text}</div>
-										</Col>
-									</Row>
-								}
-								{!item.isMe &&
-									<Row style={{ width: '100%' }}>
-										<Col {...avatarCol}>
-											<Avatar icon="robot" size="large" />
-										</Col>
-										<Col {...chatCol}>
-											<div className="chat-box-item">{item.text}</div>
-										</Col>
-									</Row>
-								}
-							</List.Item>
-						)}
-					/>
+					{this.state.chatList.map((item, i) => (
+						<Row style={{ transform: item.isMe ? 'scaleX(-1)' : '', margin: '20px 0' }} key={i}>
+							<Col {...avatarCol}>
+								<Avatar icon="user" size="large" />
+							</Col>
+							<Col {...chatCol}>
+								<div className={item.isMe ? 'chat-box-item is-me' : 'chat-box-item'}>{item.text}</div>
+							</Col>
+						</Row>
+					))}
 					<div style={{ float: 'left', clear: 'both' }} ref={(el) => { this.messagesEnd = el }} />
 				</div>
-				<Row gutter={{ xs: 0, sm: 20, md: 20 }}>
-					<Col span={20}>
+				<Row>
+					<Col span={this.state.inputMode === 'text' ? 2 : 0} style={{ textAlign: 'center' }}>
+						<Button shape="circle" icon="sound" onClick={() => this.setState({ inputMode: 'sound' })} />
+					</Col>
+					<Col span={this.state.inputMode === 'text' ? 22 : 0}>
 						<Input
 							onChange={e => this.setState({ input: e.target.value })}
 							value={this.state.input} onPressEnter={() => this.onSend()}
@@ -142,14 +132,15 @@ class App extends React.Component {
 							ref={(el) => { this.speakInput = el }}
 						/>
 					</Col>
-					<Col span={this.state.input ? 4 : 0}>
-						<Button style={{ width: '100%' }} onClick={() => this.onSend()} loading={this.state.loadingSend}>Send</Button>
+
+					<Col span={this.state.inputMode === 'sound' ? 2 : 0} style={{ textAlign: 'center' }}>
+						<Button shape="circle" icon="align-left" onClick={() => this.setState({ inputMode: 'text' })} />
 					</Col>
-					<Col span={!this.state.input && !this.state.loadingSpeakRecognition ? 4 : 0}>
-						<Button style={{ width: '100%' }} onClick={this.onSpeakRecognition}><Icon type="sound" theme="outlined" /></Button>
+					<Col span={this.state.inputMode === 'sound' && !this.state.loadingSpeakRecognition ? 22 : 0}>
+						<Button onClick={this.onSpeakRecognition} style={{ width: '100%' }}>点击 说话</Button>
 					</Col>
-					<Col span={!this.state.input && this.state.loadingSpeakRecognition ? 4 : 0}>
-						<Button style={{ width: '100%' }} onClick={this.onStopSpeakRecognition}><Icon type="pause" theme="outlined" /></Button>
+					<Col span={this.state.inputMode === 'sound' && this.state.loadingSpeakRecognition ? 22 : 0}>
+						<Button onClick={this.onStopSpeakRecognition} style={{ width: '100%' }}>点击 结束</Button>
 					</Col>
 				</Row>
 			</div>
