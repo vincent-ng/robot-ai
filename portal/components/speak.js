@@ -95,7 +95,7 @@ function speechRecord(format = '', timeout = DEFAULT_TIMEOUT) {
 	} else if (format.toLowerCase() === 'txt') {
 		return speechRecognition(timeout)
 	}
-	throw new Error(`unsupport format ${format}`)
+	throw new Error(`unsupported speech engine ${format}`)
 }
 
 function speak(text, voice) {

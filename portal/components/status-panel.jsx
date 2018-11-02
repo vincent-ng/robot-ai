@@ -104,7 +104,7 @@ class StatusPanel extends React.Component {
 								<Col span={18}><Icon {...iconProps(this.state.supportSpeechSynthesis)} /></Col>
 							</Row>
 						</List.Item>
-						{this.state.supportSpeechSynthesis &&
+						{this.state.voices.length &&
 							<List.Item>
 								<Row {...rowProps}>
 									<Col span={6}>合成声音</Col>

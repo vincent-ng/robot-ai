@@ -20,7 +20,7 @@ class App extends React.Component {
 			chatList: [{ text: '在输入框输入文字，或点击录音按钮可与我对话。', isMe: false }],
 			voice: null,
 			sr: null,
-			speechRecordFormat: null,
+			speechRecordFormat: undefined,
 		}
 		this.onSpeech = this.onSpeech.bind(this)
 		this.onStopSpeech = this.onStopSpeech.bind(this)
