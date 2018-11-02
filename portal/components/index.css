@@ -30,3 +30,7 @@ body {
 	color: #505050;
 	transform:scaleX(-1);
 }
+
+audio.chat-box-item {
+	min-height: 66px;
+}

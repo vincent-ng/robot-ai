@@ -17,7 +17,10 @@
     "koa-compress": "^3.0.0",
     "koa-qs": "^2.0.0",
     "koa-router": "^7.4.0",
+    "lame": "^1.2.4",
+    "memory-fs": "^0.4.1",
     "node-fetch": "^2.2.0",
-    "ramda": "^0.25.0"
+    "ramda": "^0.25.0",
+    "wav": "^1.0.2"
   }
 }

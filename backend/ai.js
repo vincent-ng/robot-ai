@@ -2,6 +2,7 @@ const querystring = require('querystring')
 const crypto = require('crypto')
 const R = require('ramda')
 const fetch = require('node-fetch')
+const { mp3ToWavWith16kSampleRate, wavToWavWith16kSampleRate } = require('./resampler')
 
 function md5(str) {
 	return crypto.createHash('md5').update(str).digest('hex')
@@ -72,8 +73,27 @@ class XFClient {
 		return this.post('http://tupapi.xfyun.cn/v1/currency', xParam, body)
 	}
 
-	aiui(xParam, body) {
-		return this.post('https://openapi.xfyun.cn/v2/aiui', xParam, body)
+	async aiui(xParam, body) {
+		if (xParam.data_type === 'text') {
+			const rs = await this.post('https://openapi.xfyun.cn/v2/aiui', xParam, body)
+			return rs
+		} else if (xParam.data_type === 'audio') {
+			let wav16k = null
+			if (xParam.format === 'mp3') {
+				wav16k = await mp3ToWavWith16kSampleRate(Buffer.from(body, 'base64'))
+				console.debug('mp3ToWavWith16kSampleRate', wav16k)
+			} else if (xParam.format === 'wav') {
+				wav16k = await wavToWavWith16kSampleRate(Buffer.from(body, 'base64'))
+				console.debug('wavToWavWith16kSampleRate', wav16k)
+			} else {
+				throw new Error(`unsupport format ${xParam.format}`)
+			}
+			delete xParam.format
+			xParam.sample_rate = '16000'
+			const rs = await this.post('https://openapi.xfyun.cn/v2/aiui', xParam, wav16k)
+			return rs
+		}
+		throw new Error(`unsupport data_type ${xParam.data_type}`)
 	}
 }
 
