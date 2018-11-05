@@ -20,6 +20,7 @@ function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
 			stop = () => {
 				clearTimeout(handle)
 				mediaRecorder.stop()
+				mediaRecorder.stream.getAudioTracks().forEach(track => track.stop())
 			}
 			mediaRecorder.addEventListener('stop', () => {
 				clearTimeout(handle)
