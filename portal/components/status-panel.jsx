@@ -34,13 +34,12 @@ class StatusPanel extends React.Component {
 			this.state.supportSpeechRecord.push({ format: 'txt', desc: '本地语音识别，推荐使用' })
 			selectFirst()
 		}
-		speechRecordToMp3().listern().then(() => this.setState(({ supportSpeechRecord }) => {
-			supportSpeechRecord.push({ format: 'mp3', desc: 'MP3，传输体积小，格式转换运算慢' })
-			return { supportSpeechRecord }
-		}, selectFirst)).catch(e => console.log(e.message || e))
-
 		speechRecordToWav().listern().then(() => this.setState(({ supportSpeechRecord }) => {
 			supportSpeechRecord.push({ format: 'wav', desc: 'WAV，传输体积大，格式转换运算快' })
+			return { supportSpeechRecord }
+		}, selectFirst)).catch(e => console.log(e.message || e))
+		speechRecordToMp3().listern().then(() => this.setState(({ supportSpeechRecord }) => {
+			supportSpeechRecord.push({ format: 'mp3', desc: 'MP3，传输体积小，格式转换运算慢' })
 			return { supportSpeechRecord }
 		}, selectFirst)).catch(e => console.log(e.message || e))
 	}

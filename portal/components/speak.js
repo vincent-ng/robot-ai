@@ -5,6 +5,8 @@ import MicRecorder from 'mic-recorder-to-mp3'
 
 const { webkitSpeechRecognition, speechSynthesis, SpeechSynthesisUtterance, navigator: { mediaDevices } } = window
 const AudioContext = window.AudioContext || window.webkitAudioContext
+window.AudioContext = AudioContext
+window.webkitAudioContext = AudioContext
 const DEFAULT_TIMEOUT = 3
 
 function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
