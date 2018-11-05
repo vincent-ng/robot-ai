@@ -1,12 +1,15 @@
+const AudioContext = window.AudioContext || window.webkitAudioContext
+window.AudioContext = AudioContext
+window.webkitAudioContext = AudioContext
+
+/* eslint-disable */
 import 'audio-recorder-polyfill'
 import R from 'ramda'
 import toWav from 'audiobuffer-to-wav'
 import MicRecorder from 'mic-recorder-to-mp3'
+/* eslint-enable */
 
 const { webkitSpeechRecognition, speechSynthesis, SpeechSynthesisUtterance, navigator: { mediaDevices } } = window
-const AudioContext = window.AudioContext || window.webkitAudioContext
-window.AudioContext = AudioContext
-window.webkitAudioContext = AudioContext
 const DEFAULT_TIMEOUT = 3
 
 function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
