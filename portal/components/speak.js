@@ -4,9 +4,8 @@ import toWav from 'audiobuffer-to-wav'
 import MicRecorder from 'mic-recorder-to-mp3'
 
 const { webkitSpeechRecognition, speechSynthesis, SpeechSynthesisUtterance, navigator: { mediaDevices } } = window
-// const { MediaRecorder, FileReader, AudioContext, Blob } = window
+const AudioContext = window.AudioContext || window.webkitAudioContext
 const DEFAULT_TIMEOUT = 3
-
 
 function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
 	let stop = () => { throw new Error('can not call speechRecord().stop before listern()') }
@@ -26,12 +25,12 @@ function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
 				const typeOgg = 'audio/ogg;codecs=opus'
 				const reader = new FileReader()
 				reader.readAsArrayBuffer(new Blob(chunks, { type: MediaRecorder.isTypeSupported(typeWebm) ? typeWebm : typeOgg }))
-				reader.onloadend = () => {
+				reader.addEventListener('loadend', () => {
 					new AudioContext().decodeAudioData(reader.result, (buffer) => {
 						const wav = toWav(buffer)
 						resolve(new Blob([wav], { type: 'audio/wav' }))
 					})
-				}
+				})
 			})
 			mediaRecorder.start()
 		}).catch(reject)
