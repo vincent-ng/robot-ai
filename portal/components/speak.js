@@ -1,3 +1,4 @@
+import 'audio-recorder-polyfill'
 import R from 'ramda'
 import toWav from 'audiobuffer-to-wav'
 import MicRecorder from 'mic-recorder-to-mp3'
@@ -9,17 +10,17 @@ const DEFAULT_TIMEOUT = 3
 
 function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
 	let stop = () => { throw new Error('can not call speechRecord().stop before listern()') }
-	const listern = () => new Promise((resolve) => {
+	const listern = () => new Promise((resolve, reject) => {
 		mediaDevices.getUserMedia({ audio: true }).then((stream) => {
 			const mediaRecorder = new MediaRecorder(stream)
 			const chunks = []
-			mediaRecorder.ondataavailable = e => chunks.push(e.data)
+			mediaRecorder.addEventListener('dataavailable', e => chunks.push(e.data))
 			const handle = setTimeout(() => stop(), timeout * 1000)
 			stop = () => {
 				clearTimeout(handle)
 				mediaRecorder.stop()
 			}
-			mediaRecorder.onstop = () => {
+			mediaRecorder.addEventListener('stop', () => {
 				clearTimeout(handle)
 				const typeWebm = 'audio/webm;codecs=opus'
 				const typeOgg = 'audio/ogg;codecs=opus'
@@ -31,9 +32,9 @@ function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
 						resolve(new Blob([wav], { type: 'audio/wav' }))
 					})
 				}
-			}
+			})
 			mediaRecorder.start()
-		})
+		}).catch(reject)
 	})
 	return {
 		listern,
