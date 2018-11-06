@@ -32,5 +32,7 @@ body {
 }
 
 audio.chat-box-item {
-	min-height: 66px;
+	padding: 0px;
+	background-color: transparent !important;
+	box-shadow: none;
 }

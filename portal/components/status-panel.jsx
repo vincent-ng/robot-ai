@@ -16,6 +16,7 @@ class StatusPanel extends React.Component {
 			selectedSpeechRecordFormat: null,
 			voices: [],
 			selectedVoice: null,
+			errors: [],
 		}
 		if (speechSynthesis) {
 			speechSynthesis.onvoiceschanged = () => {
@@ -29,19 +30,7 @@ class StatusPanel extends React.Component {
 	}
 
 	componentDidMount() {
-		const selectFirst = () => this.onChangeSpeechRecordFormat(this.state.supportSpeechRecord[0].format)
-		if (this.state.supportSpeechRecognition) {
-			this.state.supportSpeechRecord.push({ format: 'txt', desc: '本地语音识别，推荐使用' })
-			selectFirst()
-		}
-		speechRecordToWav().listern().then(() => this.setState(({ supportSpeechRecord }) => {
-			supportSpeechRecord.push({ format: 'wav', desc: 'WAV，传输体积大，格式转换运算快' })
-			return { supportSpeechRecord }
-		}, selectFirst)).catch(e => console.log(e.message || e))
-		speechRecordToMp3().listern().then(() => this.setState(({ supportSpeechRecord }) => {
-			supportSpeechRecord.push({ format: 'mp3', desc: 'MP3，传输体积小，格式转换运算慢' })
-			return { supportSpeechRecord }
-		}, selectFirst)).catch(e => console.log(e.message || e))
+		this.checkFeatures()
 	}
 
 	onChangeVoice(selectedVoice) {
@@ -55,6 +44,43 @@ class StatusPanel extends React.Component {
 		this.setState({ selectedSpeechRecordFormat })
 		if (this.props.onChangeSpeechRecordFormat) {
 			this.props.onChangeSpeechRecordFormat(selectedSpeechRecordFormat)
+		}
+	}
+
+	async checkFeatures() {
+		const handleErr = (e) => {
+			console.log(e.message || e.name || e)
+			this.setState(({ errors }) => {
+				errors.push(e)
+				return { errors }
+			})
+		}
+
+		const selectFirst = () => this.onChangeSpeechRecordFormat(this.state.supportSpeechRecord[0].format)
+
+		if (this.state.supportSpeechRecognition) {
+			this.state.supportSpeechRecord.push({ format: 'txt', desc: '本地语音识别，推荐使用' })
+			selectFirst()
+		}
+
+		try {
+			await speechRecordToWav(1).listern()
+			this.setState(({ supportSpeechRecord }) => {
+				supportSpeechRecord.push({ format: 'wav', desc: 'WAV，传输体积大，格式转换运算快' })
+				return { supportSpeechRecord }
+			}, selectFirst)
+		} catch (e) {
+			handleErr(e)
+		}
+
+		try {
+			await speechRecordToMp3(1).listern()
+			this.setState(({ supportSpeechRecord }) => {
+				supportSpeechRecord.push({ format: 'mp3', desc: 'MP3，传输体积小，格式转换运算慢' })
+				return { supportSpeechRecord }
+			}, selectFirst)
+		} catch (e) {
+			handleErr(e)
 		}
 	}
 
@@ -119,6 +145,11 @@ class StatusPanel extends React.Component {
 						}
 					</List>
 				</Collapse.Panel>
+				{!!this.state.errors.length &&
+					<Collapse.Panel style={{ border: 0 }} header="error">
+						{this.state.errors.map((e, i) => <div key={i}>{e.message || e.name}: {JSON.stringify(e)}</div>)}
+					</Collapse.Panel>
+				}
 			</Collapse>
 		)
 	}

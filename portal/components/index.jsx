@@ -114,7 +114,7 @@ class App extends React.Component {
 		return (
 			<div>
 				<StatusPanel
-					title={<b style={{ fontSize: 16 }}>Robot AI</b>}
+					title={<b style={{ fontSize: 16 }}>Robot AI v0.0.3</b>}
 					onChangeVoice={voice => this.setState({ voice })}
 					onChangeSpeechRecordFormat={speechRecordFormat => this.setState({ speechRecordFormat })}
 				/>

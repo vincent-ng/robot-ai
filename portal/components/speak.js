@@ -1,9 +1,8 @@
 const AudioContext = window.AudioContext || window.webkitAudioContext
-window.AudioContext = AudioContext
-window.webkitAudioContext = AudioContext
+window.AudioContext = AudioContext // fix bug for mic-recorder-to-mp3
 
 /* eslint-disable */
-import 'audio-recorder-polyfill'
+import MediaRecorder from 'audio-recorder-polyfill'
 import R from 'ramda'
 import toWav from 'audiobuffer-to-wav'
 import MicRecorder from 'mic-recorder-to-mp3'
@@ -53,14 +52,16 @@ function speechRecordToMp3(timeout = DEFAULT_TIMEOUT) {
 	})
 	let stop = () => { throw new Error('can not call speechRecord().stop before listern()') }
 	const listern = () => new Promise((resolve, reject) => {
-		recorder.start().catch(reject)
-		const handle = setTimeout(() => stop(), timeout * 1000)
-		stop = () => {
-			clearTimeout(handle)
-			recorder.stop().getMp3().then(([, blob]) => {
-				resolve(blob)
-			}).catch(reject)
-		}
+		recorder.start().then(() => {
+			let handle = null
+			handle = setTimeout(() => stop(), timeout * 1000)
+			stop = () => {
+				clearTimeout(handle)
+				recorder.stop().getMp3().then(([, blob]) => {
+					resolve(blob)
+				}).catch(reject)
+			}
+		}).catch(reject)
 	})
 
 	return {
