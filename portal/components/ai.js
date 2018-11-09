@@ -2,7 +2,8 @@ const crypto = require('crypto')
 const R = require('ramda')
 const { fetch } = require('whatwg-fetch')
 
-const SERVER_BASE = 'https://wt-18e127c6f4b8a13508b25fa5c646c8a2-0.sandbox.auth0-extend.com/robot-ai/api'
+const SERVER_BASE = 'https://v3w3ozjzk7.execute-api.ap-southeast-1.amazonaws.com/dev/api'
+// const SERVER_BASE = 'https://wt-18e127c6f4b8a13508b25fa5c646c8a2-0.sandbox.auth0-extend.com/robot-ai/api'
 // const SERVER_BASE = '/api'
 
 function md5(str) {
@@ -52,12 +53,11 @@ async function talkToAI(speech, { emptyInput = '', emptyOutput = '' }) {
 	let rs
 	try {
 		if (speech instanceof Blob) {
-			const [, format] = /\w+\/(\w+)/g.exec(speech.type)
 			rs = await post('aiui', {
 				scene: 'main',
 				auth_id: md5('vincent'),
+				sample_rate: '16000',
 				data_type: 'audio',
-				format: format.toLowerCase(),
 			}, await toBase64(speech))
 		} else {
 			rs = await post('aiui', {

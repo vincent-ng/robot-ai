@@ -2,7 +2,7 @@ import R from 'ramda'
 import React from 'React'
 import PropTypes from 'prop-types'
 import { Row, Col, List, Icon, Select, Collapse } from 'antd'
-import { speechRecordToMp3, speechRecordToWav } from './speak'
+import { speechRecordToWav } from './speak'
 
 const { webkitSpeechRecognition, speechSynthesis } = window
 
@@ -20,6 +20,9 @@ class StatusPanel extends React.Component {
 		}
 		if (speechSynthesis) {
 			speechSynthesis.onvoiceschanged = () => {
+				if (this.state.voices.length) {
+					return
+				}
 				const voices = speechSynthesis.getVoices()
 				const selectedVoice = (R.find(R.propEq('default', true))(voices) || {}).name
 				this.setState({ voices, selectedVoice })
@@ -66,22 +69,22 @@ class StatusPanel extends React.Component {
 		try {
 			await speechRecordToWav(1).listern()
 			this.setState(({ supportSpeechRecord }) => {
-				supportSpeechRecord.push({ format: 'wav', desc: 'WAV，传输体积大，格式转换运算快' })
+				supportSpeechRecord.push({ format: 'wav', desc: 'WAV，传输体积大' })
 				return { supportSpeechRecord }
 			}, selectFirst)
 		} catch (e) {
 			handleErr(e)
 		}
 
-		try {
-			await speechRecordToMp3(1).listern()
-			this.setState(({ supportSpeechRecord }) => {
-				supportSpeechRecord.push({ format: 'mp3', desc: 'MP3，传输体积小，格式转换运算慢' })
-				return { supportSpeechRecord }
-			}, selectFirst)
-		} catch (e) {
-			handleErr(e)
-		}
+		// try {
+		// 	await speechRecordToMp3(1).listern()
+		// 	this.setState(({ supportSpeechRecord }) => {
+		// 		supportSpeechRecord.push({ format: 'mp3', desc: 'MP3，传输体积小，格式转换运算慢' })
+		// 		return { supportSpeechRecord }
+		// 	}, selectFirst)
+		// } catch (e) {
+		// 	handleErr(e)
+		// }
 	}
 
 	render() {

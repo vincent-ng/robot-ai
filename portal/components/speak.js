@@ -2,13 +2,17 @@ const AudioContext = window.AudioContext || window.webkitAudioContext
 window.AudioContext = AudioContext // fix bug for mic-recorder-to-mp3
 
 /* eslint-disable */
-import MediaRecorder from 'audio-recorder-polyfill'
+import MR from 'audio-recorder-polyfill'
 import R from 'ramda'
 import toWav from 'audiobuffer-to-wav'
 import MicRecorder from 'mic-recorder-to-mp3'
 /* eslint-enable */
 
 const { webkitSpeechRecognition, speechSynthesis, SpeechSynthesisUtterance, navigator: { mediaDevices } } = window
+let { MediaRecorder } = window
+if (typeof MediaRecorder === 'undefined') {
+	MediaRecorder = MR
+}
 const DEFAULT_TIMEOUT = 3
 
 function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
@@ -31,7 +35,11 @@ function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
 				const reader = new FileReader()
 				reader.readAsArrayBuffer(new Blob(chunks, { type: MediaRecorder.isTypeSupported(typeWebm) ? typeWebm : typeOgg }))
 				reader.addEventListener('loadend', () => {
-					new AudioContext().decodeAudioData(reader.result, (buffer) => {
+					new OfflineAudioContext({
+						numberOfChannels: 2,
+						length: 16000 * 40,
+						sampleRate: 16000,
+					}).decodeAudioData(reader.result, (buffer) => {
 						const wav = toWav(buffer)
 						resolve(new Blob([wav], { type: 'audio/wav' }))
 					})
