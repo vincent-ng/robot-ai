@@ -22,11 +22,6 @@ client.setKey('aiui', config.keys.aiui)
 const app = new Koa()
 const router = new Router()
 
-class CommonError extends Error {
-	constructor(code, msg) { super(msg); this.code = code }
-	get StatusCode() { return this.code }
-}
-
 const limitString = (str = '', limit) => (str.length > limit ? `${str.substring(0, limit)}...` : str)
 
 router.get('/', async (ctx) => {
@@ -60,11 +55,8 @@ app.use(async (ctx, next) => {
 	try {
 		await next()
 	} catch (e) {
-		if (e instanceof CommonError) {
-			ctx.throw(e.StatusCode, e.message, { expose: true })
-		} else {
-			throw e
-		}
+		console.log(e)
+		ctx.throw(e.StatusCode, e.message, { expose: true })
 	}
 })
 

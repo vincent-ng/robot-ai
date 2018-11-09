@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:deps": "powershell -c \"rm node_modules.linux\"; powershell -c \"mkdir node_modules.linux\"; powershell -c \"docker build . -f lambda-deps.Dockerfile -t robot-ai-lambda-deps\"; powershell -c \"docker run -it --rm -v $PWD/node_modules.linux/:/app/node_modules/ robot-ai-lambda-deps\"",
+    "build": "docker build . -t robot-ai",
+    "start": "powershell -c \"docker run -it --name robot-ai-backend --rm -v $PWD/node_modules.linux/:/app/node_modules/ -p 8081:8081 robot-ai\"",
+    "deploy": "serverless deploy -r ap-southeast-1"
   },
   "author": "",
   "license": "ISC",
@@ -17,10 +20,9 @@
     "koa-compress": "^3.0.0",
     "koa-qs": "^2.0.0",
     "koa-router": "^7.4.0",
-    "lame": "^1.2.4",
     "memory-fs": "^0.4.1",
     "node-fetch": "^2.2.0",
     "ramda": "^0.25.0",
-    "wav": "^1.0.2"
+    "serverless-http": "^1.8.0"
   }
 }
