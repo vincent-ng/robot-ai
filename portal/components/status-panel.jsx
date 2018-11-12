@@ -69,7 +69,7 @@ class StatusPanel extends React.Component {
 		try {
 			await speechRecordToWav(1).listern()
 			this.setState(({ supportSpeechRecord }) => {
-				supportSpeechRecord.push({ format: 'wav', desc: 'WAV，传输体积大' })
+				supportSpeechRecord.push({ format: 'wav', desc: '云端语音识别，WAV传输' })
 				return { supportSpeechRecord }
 			}, selectFirst)
 		} catch (e) {
@@ -79,7 +79,7 @@ class StatusPanel extends React.Component {
 		// try {
 		// 	await speechRecordToMp3(1).listern()
 		// 	this.setState(({ supportSpeechRecord }) => {
-		// 		supportSpeechRecord.push({ format: 'mp3', desc: 'MP3，传输体积小，格式转换运算慢' })
+		// 		supportSpeechRecord.push({ format: 'mp3', desc: '云端语音识别，MP3传输' })
 		// 		return { supportSpeechRecord }
 		// 	}, selectFirst)
 		// } catch (e) {

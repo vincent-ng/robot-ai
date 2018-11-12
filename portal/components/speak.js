@@ -1,12 +1,13 @@
-const AudioContext = window.AudioContext || window.webkitAudioContext
-window.AudioContext = AudioContext // fix bug for mic-recorder-to-mp3
-
-/* eslint-disable */
 import MR from 'audio-recorder-polyfill'
 import R from 'ramda'
 import toWav from 'audiobuffer-to-wav'
-import MicRecorder from 'mic-recorder-to-mp3'
-/* eslint-enable */
+import ndarray from 'ndarray'
+import resample from 'ndarray-resample'
+
+const AudioContext = window.AudioContext || window.webkitAudioContext
+window.AudioContext = AudioContext // fix bug for mic-recorder-to-mp3
+
+import MicRecorder from 'mic-recorder-to-mp3' // eslint-disable-line
 
 const { webkitSpeechRecognition, speechSynthesis, SpeechSynthesisUtterance, navigator: { mediaDevices } } = window
 let { MediaRecorder } = window
@@ -14,6 +15,34 @@ if (typeof MediaRecorder === 'undefined') {
 	MediaRecorder = MR
 }
 const DEFAULT_TIMEOUT = 3
+
+function getMonoAudio(audioBuffer) {
+	if (audioBuffer.numberOfChannels === 1) {
+		return audioBuffer.getChannelData(0)
+	}
+	if (audioBuffer.numberOfChannels !== 2) {
+		throw Error(`${audioBuffer.numberOfChannels} channel audio is not supported.`)
+	}
+	const ch0 = audioBuffer.getChannelData(0)
+	const ch1 = audioBuffer.getChannelData(1)
+
+	const mono = new Float32Array(audioBuffer.length)
+	for (let i = 0; i < audioBuffer.length; i += 1) {
+		mono[i] = (ch0[i] + ch1[i]) / 2
+	}
+	return mono
+}
+
+function resampleAudioBuffer(audioBuffer, sampleRate) {
+	const lengthRes = audioBuffer.length * (sampleRate / audioBuffer.sampleRate)
+	const resampledAudio = new Float32Array(lengthRes)
+	const originalAudio = getMonoAudio(audioBuffer)
+	resample(
+		ndarray(resampledAudio, [lengthRes]),
+		ndarray(originalAudio, [originalAudio.length])
+	)
+	return resampledAudio
+}
 
 function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
 	let stop = () => { throw new Error('can not call speechRecord().stop before listern()') }
@@ -35,14 +64,15 @@ function speechRecordToWav(timeout = DEFAULT_TIMEOUT) {
 				const reader = new FileReader()
 				reader.readAsArrayBuffer(new Blob(chunks, { type: MediaRecorder.isTypeSupported(typeWebm) ? typeWebm : typeOgg }))
 				reader.addEventListener('loadend', () => {
-					new OfflineAudioContext({
-						numberOfChannels: 2,
-						length: 16000 * 40,
-						sampleRate: 16000,
-					}).decodeAudioData(reader.result, (buffer) => {
-						const wav = toWav(buffer)
-						resolve(new Blob([wav], { type: 'audio/wav' }))
-					})
+					try {
+						new AudioContext().decodeAudioData(reader.result, (audioBuffer) => {
+							try {
+								const resampledAudio = resampleAudioBuffer(audioBuffer, 16000)
+								const wav = toWav({ getChannelData: () => resampledAudio, numberOfChannels: 1, sampleRate: 16000 })
+								resolve(new Blob([wav], { type: 'audio/wav' }))
+							} catch (e) { reject(e) }
+						})
+					} catch (e) { reject(e) }
 				})
 			})
 			mediaRecorder.start()
