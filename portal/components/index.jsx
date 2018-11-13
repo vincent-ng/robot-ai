@@ -5,6 +5,7 @@ import { Row, Col, Button, Input, Avatar, Divider } from 'antd'
 import { StatusPanel } from './status-panel'
 import { talkToAI } from './ai'
 import { speechRecord, speak } from './speak'
+import { ForkMeOnGithub } from './fork-me-on-github'
 import './index.css'
 
 class App extends React.Component {
@@ -119,8 +120,9 @@ class App extends React.Component {
 
 		return (
 			<div>
+				<ForkMeOnGithub position="top-right" href="https://github.com/vincent-ng/robot-ai" title="Fork" />
 				<StatusPanel
-					title={<b style={{ fontSize: 16 }}>Robot AI v0.0.3</b>}
+					title={<b style={{ fontSize: 16 }}>Robot AI v0.0.4</b>}
 					onChangeVoice={voice => this.setState({ voice })}
 					onChangeSpeechRecordFormat={speechRecordFormat => this.setState({ speechRecordFormat })}
 				/>

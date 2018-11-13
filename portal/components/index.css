@@ -36,3 +36,8 @@ audio.chat-box-item {
 	background-color: transparent !important;
 	box-shadow: none;
 }
+
+.github-fork-ribbon {
+	top: -30px;
+	right: -30px;
+}
