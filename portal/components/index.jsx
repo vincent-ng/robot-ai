@@ -59,20 +59,18 @@ class App extends React.Component {
 		const isAudio = text instanceof Blob
 		if (text) {
 			if (isAudio) {
-				this.state.chatList.push({ text: '', url: URL.createObjectURL(text), isMe: true, isAudio })
+				this.addChat({ text: '', url: URL.createObjectURL(text), isMe: true, isAudio })
 			} else {
-				this.state.chatList.push({ text, isMe: true })
+				this.addChat({ text, isMe: true })
 			}
-			this.state.inputHistory.push(text)
 		}
-		this.setState({ input: '', inputHistoryIndex: null })
 
 		this.setState({ loadingSend: true })
 		const { input, output } = await talkToAI(text, { emptyInput: defaultAnswer, emptyOutput: '智商掉线了' })
 		if (isAudio && input) {
-			this.state.chatList.push({ text: input, isMe: true })
+			this.addChat({ text: input, isMe: true })
 		}
-		this.state.chatList.push({ text: output, isMe: false })
+		this.addChat({ text: output, isMe: false })
 		this.setState({ loadingSend: false })
 		speak(output, this.state.voice)
 		this.speechInput.focus()
@@ -96,6 +94,14 @@ class App extends React.Component {
 			const input = this.state.inputHistory[inputHistoryIndex] || ''
 			this.setState({ input, inputHistoryIndex })
 		}
+	}
+
+	addChat(content) {
+		this.state.chatList.push(content)
+		if (content.isMe && !content.isAudio) {
+			this.state.inputHistory.push(content.text)
+		}
+		this.setState({ input: '', inputHistoryIndex: null })
 	}
 
 	render() {
