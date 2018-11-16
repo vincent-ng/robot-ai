@@ -35,12 +35,14 @@ router.post('/api', async (ctx) => {
 	let res = await xfClient[api](xparam, body)
 	const answers = res.data || []
 	const input = R.pathOr(R.pathOr('', [0, 'text'], answers), [0, 'intent', 'text'], answers)
-	const output = R.pathOr('', [0, 'intent', 'answer', 'text'], R.filter(e => e.intent && e.intent.answer, answers))
+	let output = R.pathOr('', [0, 'intent', 'answer', 'text'], R.filter(e => e.intent && e.intent.answer, answers))
+
 	if (api === 'aiui' && input && !output) {
-		res = await tlClient.chat(input)
 		source = 'tuling'
+		res = await tlClient.chat(input, { userId: xparam.auth_id })
+		output = R.map(e => e.values.text, R.filter(e => e.resultType === 'text', res.results || [])).join(' ')
 	}
-	ctx.body = { source, req: input, res }
+	ctx.body = { source, input, output, res }
 })
 
 app.use(cors({ credentials: true }))

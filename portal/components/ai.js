@@ -1,5 +1,4 @@
 const crypto = require('crypto')
-const R = require('ramda')
 const { fetch } = require('whatwg-fetch')
 
 const SERVER_BASE = 'https://v3w3ozjzk7.execute-api.ap-southeast-1.amazonaws.com/dev/api'
@@ -46,7 +45,7 @@ function toBase64(blob) {
 	})
 }
 
-async function talkToAI(speech, { emptyInput = '', emptyOutput = '' }) {
+async function talkToAI(speech, { emptyInput = '', emptyOutput = '', userId = 'anonymous' }) {
 	if (!speech) {
 		return { input: '', output: emptyInput }
 	}
@@ -55,26 +54,22 @@ async function talkToAI(speech, { emptyInput = '', emptyOutput = '' }) {
 		if (speech instanceof Blob) {
 			rs = await post('aiui', {
 				scene: 'main',
-				auth_id: md5('vincent'),
+				auth_id: md5(userId),
 				sample_rate: '16000',
 				data_type: 'audio',
 			}, await toBase64(speech))
 		} else {
 			rs = await post('aiui', {
 				scene: 'main',
-				auth_id: md5('vincent'),
+				auth_id: md5(userId),
 				data_type: 'text',
 			}, speech)
 		}
-		const { source, req: input, res } = JSON.parse(rs)
+		const { source, input, output } = JSON.parse(rs)
 		if (source === 'xunfei') {
-			const answers = R.filter(e => e.intent && e.intent.answer, res.data || [])
-			const answer = R.pathOr(emptyOutput, [0, 'intent', 'answer', 'text'], answers)
-			return { input, output: answer.replace(/\[\w+\]/g, '') }
+			return { input, output: output.replace(/\[\w+\]/g, '') }
 		} else if (source === 'tuling') {
-			const answers = R.filter(e => e.resultType === 'text', res.results || [])
-			const answer = R.map(e => e.values.text, answers).join(' ')
-			return { input, output: answer }
+			return { input, output }
 		}
 		throw new Error(`unknow source ${source}`)
 	} catch (e) {
