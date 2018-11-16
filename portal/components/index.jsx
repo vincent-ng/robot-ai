@@ -122,7 +122,7 @@ class App extends React.Component {
 			<div>
 				<ForkMeOnGithub position="top-right" href="https://github.com/vincent-ng/robot-ai" title="Fork" />
 				<StatusPanel
-					title={<b style={{ fontSize: 16 }}>Robot AI v0.0.4</b>}
+					title={<b style={{ fontSize: 16 }}>Robot AI v0.0.5</b>}
 					onChangeVoice={voice => this.setState({ voice })}
 					onChangeSpeechRecordFormat={speechRecordFormat => this.setState({ speechRecordFormat })}
 				/>
