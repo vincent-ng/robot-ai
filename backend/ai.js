@@ -84,4 +84,31 @@ class XFClient {
 	}
 }
 
-module.exports = { XFClient }
+class TLClient {
+	constructor(apiKey) {
+		this.apiKey = apiKey
+	}
+
+	async chat(text, { userId = 'anonymous' } = {}) {
+		const url = 'http://openapi.tuling123.com/openapi/api/v2'
+		const options = {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8',
+			},
+			body: JSON.stringify({
+				reqType: 0,
+				perception: { inputText: { text } },
+				userInfo: { apiKey: this.apiKey, userId },
+			}),
+		}
+		console.log(url, JSON.stringify(R.pickAll(['method', 'body'], options)))
+		const rs = await fetch(url, options)
+		const json = await rs.json()
+		console.log(url, rs.status, rs.headers.get('content-type'), JSON.stringify(json))
+		return json
+	}
+
+}
+
+module.exports = { XFClient, TLClient }

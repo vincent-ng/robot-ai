@@ -2,9 +2,9 @@ const crypto = require('crypto')
 const R = require('ramda')
 const { fetch } = require('whatwg-fetch')
 
-const SERVER_BASE = 'https://v3w3ozjzk7.execute-api.ap-southeast-1.amazonaws.com/dev/api'
+// const SERVER_BASE = 'https://v3w3ozjzk7.execute-api.ap-southeast-1.amazonaws.com/dev/api'
 // const SERVER_BASE = 'https://wt-18e127c6f4b8a13508b25fa5c646c8a2-0.sandbox.auth0-extend.com/robot-ai/api'
-// const SERVER_BASE = '/api'
+const SERVER_BASE = '/api'
 
 function md5(str) {
 	return crypto.createHash('md5').update(str).digest('hex')
@@ -66,12 +66,17 @@ async function talkToAI(speech, { emptyInput = '', emptyOutput = '' }) {
 				data_type: 'text',
 			}, speech)
 		}
-		const json = JSON.parse(rs)
-		const input = R.pathOr('', ['data', 0, 'text'], json)
-		const answers = R.filter(e => e.intent && e.intent.answer, json.data || [])
-		const answer = R.pathOr(emptyOutput, [0, 'intent', 'answer', 'text'], answers)
-
-		return { input, output: answer.replace(/\[\w+\]/g, '') }
+		const { source, req: input, res } = JSON.parse(rs)
+		if (source === 'xunfei') {
+			const answers = R.filter(e => e.intent && e.intent.answer, res.data || [])
+			const answer = R.pathOr(emptyOutput, [0, 'intent', 'answer', 'text'], answers)
+			return { input, output: answer.replace(/\[\w+\]/g, '') }
+		} else if (source === 'tuling') {
+			const answers = R.filter(e => e.resultType === 'text', res.results || [])
+			const answer = R.map(e => e.values.text, answers).join(' ')
+			return { input, output: answer }
+		}
+		throw new Error(`unknow source ${source}`)
 	} catch (e) {
 		console.error(e)
 		return { input: '', output: emptyOutput }

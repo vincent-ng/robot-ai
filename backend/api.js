@@ -8,16 +8,17 @@ const koaBody = require('koa-body')
 const qs = require('koa-qs')
 const compress = require('koa-compress')
 const logger = require('@brickyard/logger')
-const { XFClient } = require('./ai.js')
+const { XFClient, TLClient } = require('./ai.js')
 const config = require('./config.js')
 
 logger.hackConsole()
 
-const client = new XFClient(config.keys.appid)
-client.setKey('tts', config.keys.tts)
-client.setKey('iat', config.keys.iat)
-client.setKey('currency', config.keys.currency)
-client.setKey('aiui', config.keys.aiui)
+const xfClient = new XFClient(config.xunfei.appid)
+xfClient.setKey('tts', config.xunfei.tts)
+xfClient.setKey('iat', config.xunfei.iat)
+xfClient.setKey('currency', config.xunfei.currency)
+xfClient.setKey('aiui', config.xunfei.aiui)
+const tlClient = new TLClient(config.tuling.apiKey)
 
 const app = new Koa()
 const router = new Router()
@@ -30,7 +31,16 @@ router.get('/', async (ctx) => {
 
 router.post('/api', async (ctx) => {
 	const { api, xparam, body } = ctx.data
-	ctx.body = await client[api](xparam, body)
+	let source = 'xunfei'
+	let res = await xfClient[api](xparam, body)
+	const answers = res.data || []
+	const input = R.pathOr(R.pathOr('', [0, 'text'], answers), [0, 'intent', 'text'], answers)
+	const output = R.pathOr('', [0, 'intent', 'answer', 'text'], R.filter(e => e.intent && e.intent.answer, answers))
+	if (api === 'aiui' && input && !output) {
+		res = await tlClient.chat(input)
+		source = 'tuling'
+	}
+	ctx.body = { source, req: input, res }
 })
 
 app.use(cors({ credentials: true }))
